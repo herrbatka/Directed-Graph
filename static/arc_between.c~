@@ -1,0 +1,37 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "structures.h"
+#include "arc_between.h"
+#include "node_by_id.h"
+#include "compare.h"
+
+//funkcja drukująca sąsiedztwo węzła
+edges arc_between(nodes ptr,char i[], char j[])
+{
+ if(ptr==NULL)
+ {
+  return NULL;
+ }
+ if(node_by_id(ptr, i)==NULL||node_by_id(ptr, j)==NULL)
+ {
+  return NULL;
+ }
+ lists temp=(node_by_id(ptr, i))->outEdges;
+ if(temp==NULL)
+ {
+  return NULL;
+ }
+ while((temp->next != NULL)&&!(compare(temp->edg->outNode->id,j,0,0)))
+ {
+  //wybiera następny węzeł (poprzez wskaźnik)
+  temp=temp->next;
+ }
+ if(compare(temp->edg->outNode->id,j,0,0))
+ {
+  return temp->edg;
+ }
+ return NULL;
+}

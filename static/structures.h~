@@ -1,0 +1,15 @@
+//structures.h
+#ifndef STRUCTURES_H
+#define STRUCTURES_H
+
+struct List;
+struct Node;
+struct Edge;
+struct Path;
+
+struct List *lists;
+struct Node *nodes;
+struct Edge *edges;
+struct Path *stepes;
+
+#endif

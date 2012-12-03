@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "structures.h"
+#include "neighbours.h"
+#include "node_by_id.h"
+#include "contain.h"
+#include "compare.h"
+
+//funkcja drukująca sąsiedztwo węzła
+void neighbours(nodes ptr,char i[])
+{
+ steps nowy=NULL;
+ printf("Sąsiedztwo węzła %s: ", i);
+ //jeśli nie ma węzłów wyświetla 'brak'
+ if(ptr==NULL)
+ {
+  printf(" brak, węzeł nie istnieje\n");
+  return;
+ }
+ if(node_by_id(ptr,i)!=NULL)
+ {
+  nodes temp=node_by_id(ptr,i);
+  if(temp->outEdges==NULL&&temp->inEdges==NULL)
+  {
+   printf(" brak");
+   return;
+  }
+  steps tabl=NULL;
+  lists lst=temp->outEdges;
+  while(lst!=NULL)
+  {
+   if(!contain(tabl,lst->edg->outNode->id) || !compare(lst->edg->outNode->id,i,0,0))
+   {
+    printf("%s ", lst->edg->outNode->id);
+    nowy=(steps)malloc(sizeof(struct Path));
+    nowy->next=tabl;
+    strcpy(nowy->id,lst->edg->outNode->id);
+    tabl=nowy;
+   }
+   lst=lst->next;
+  }
+  lst=temp->inEdges;
+  while(lst!=NULL)
+  {
+   if(!contain(tabl,lst->edg->inNode->id) || !compare(lst->edg->inNode->id,i,0,0))
+   {
+    printf("%s ", lst->edg->inNode->id);
+    nowy=(steps)malloc(sizeof(struct Path));
+    nowy->next=tabl;
+    strcpy(nowy->id,lst->edg->outNode->id);
+    tabl=nowy;
+   }
+   lst=lst->next;
+  }
+  printf("\n");
+  steps temp2=NULL;
+  while(tabl!=NULL)
+  {
+   temp2=tabl;
+   tabl=tabl->next;
+   free(temp2);
+  }
+  return;
+ }
+ printf(" brak\n");
+}

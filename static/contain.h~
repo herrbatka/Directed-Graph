@@ -1,0 +1,7 @@
+//contain.h
+#ifndef CONTAIN_H
+#define CONTAIN_H
+
+bool contain(steps lista, char b[])
+
+#endif

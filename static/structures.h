@@ -1,0 +1,56 @@
+//structures.h
+#ifndef STRUCTURES_H
+#define STRUCTURES_H
+
+//Struktura przechowująca listę krawędzi (dla struktury węzłów)
+struct List
+{
+ //Wskaźnik na krawędź
+ struct Edge *edg;
+ //Wskaźnik na następny element listy
+ struct List *next;
+};
+//"Alias" pozwalający używać "lists" zamiast konstrukcji "struct List *"
+typedef struct List *lists;
+
+//Struktura przechowująca poszczególne węzły
+struct Node
+{
+ //Id węzła
+ char id[50];
+ //Lista (vide wskaźnik na strukturę List zadeklarowana wcześniej) krawędzi wchodzących do węzła
+ struct List *inEdges;
+ //Lista (vide wskaźnik na strukturę List zadeklarowana wcześniej) krawędzi wychodzących z węzła
+ struct List *outEdges;
+ //Wskaźnik na kolejny element listy (kolejny węzeł)
+ struct Node *next;
+};
+//"Alias" pozwalający używać "nodes" zamiast konstrukcji "struct Node *"
+typedef struct Node *nodes;
+
+//Struktura przechowująca poszczególne krawędzi
+struct Edge
+{
+ //Id krawędzi
+ char id[50];
+ //Wskaźnik na węzeł, z którego krawędź wychodzi
+ struct Node *inNode;
+ //Wskaźnik na węzeł, do którego krawędź wchodzi
+ struct Node *outNode;
+ //Wskaźnik na kolejny element listy (kolejną krawędź)
+ struct Edge *next;
+};
+//"Alias" pozwalający używać "edges" zamiast konstrukcji "struct Edge *"
+typedef struct Edge *edges;
+
+struct Path
+{
+ //Wskaźnik na krawędź
+ char id[50];
+ //Wskaźnik na następny element listy
+ struct Path *next;
+};
+//"Alias" pozwalający używać "lists" zamiast konstrukcji "struct List *"
+typedef struct Path *steps;
+
+#endif

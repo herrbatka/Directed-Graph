@@ -1,0 +1,7 @@
+//compare.h
+#ifndef COMPARE_H
+#define COMPARE_H
+
+bool compare(char a[], char b[], int i, int j);
+
+#endif

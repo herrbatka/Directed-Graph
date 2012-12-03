@@ -1,0 +1,28 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "structures.h"
+#include "print_edges.h"
+
+//funkcja drukujaca krawędzie
+void print_edges(edges ptr)
+{
+ printf("Zadeklarowane krawędzie: ");
+ //jeśli nie ma krawędzi, informuje o tym i przerywa drukowanie
+ if(ptr==NULL)
+ {
+  printf(" brak\n");
+  return;
+ }
+ //dla każdej krawędzi, aż dojdzie do końca...
+ while(ptr != NULL)
+ {
+ //...drukuje informacje postaci 'ID krawędzi(ID węzła początkowego -> Id węzła końcowego)'
+ printf("%s(%s->%s) ", ptr->id, ptr->inNode->id, ptr->outNode->id);
+ //i przechodzi do kolejnej krawędzi
+ ptr=ptr->next;
+ }
+ printf("\n");
+}

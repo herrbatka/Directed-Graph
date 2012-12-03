@@ -1,0 +1,22 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "moja.h"
+
+//funkcja drukująca listę krawędzi dla wierzchołków
+void print_list(lists ptr)
+{
+ //jeśli nie ma krawędzi dla danego węzła wyświetla 'brak'
+ if(ptr==NULL)
+ {
+  printf(" brak");
+ }
+ //W innym przypadku iteruje po wszystkich elementach listy krawędzi i wyprowadza na ekran stosowne informacje
+ while(ptr != NULL)
+ {
+  printf(" %s", ptr->edg->id);
+  ptr=ptr->next;
+ }
+}

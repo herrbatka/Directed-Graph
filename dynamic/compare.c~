@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+//porównywanie łańcuchów znakowych
+bool compare(char a[], char b[], int i, int j)
+{
+ bool wynik=true;
+ if((b[j]!='\0') && (a[i]=='\0'))
+ {
+  return false;
+ }
+ if((b[j]=='\0') && (a[i]!='\0')&& (a[i]!='*'))
+ {
+  return false;
+ }
+ if((b[j]!='\0') && (a[i]!='\0'))
+ {
+  if(a[i]=='*')
+  {
+   if(b[j]==' ')
+   {
+    wynik=compare(a,b,i+1,j);
+   }
+   else if(!(((b[j]>=97) && (b[j]<=122))||((b[j]>=48) && (b[j]<=57))))
+   {
+    wynik=false;
+   }
+   else
+   {
+    wynik=compare(a,b,i,j+1);
+   }
+  }
+  else if(a[i]!=b[j])
+  {
+   return false;
+  }
+  else
+  {
+   wynik= compare(a,b,i+1,j+1);
+  }
+ }
+ return wynik;
+}

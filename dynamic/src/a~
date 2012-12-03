@@ -1,0 +1,17 @@
+#!/bin/bash
+echo "mkdir ../include"
+mkdir ../include
+echo "cp ../moja.h ../include"
+cp ../moja.h ../include
+echo "mkdir ../lib"
+mkdir ../lib
+echo "cp ../libmoja.so ../lib"
+cp ../libmoja.so ../lib
+echo "../bin"
+mkdir ../bin
+echo "make"
+make
+echo "LD_LIBRARY_PATH=../lib"
+export LD_LIBRARY_PATH=../lib
+echo "../bin/program"
+../bin/program

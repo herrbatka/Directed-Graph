@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "moja.h"
+
+//funkcja usuwajaca krawędzie
+void delete_edge(edges *ptr, char i[])
+{
+ edges prev;
+ edges temp;
+ edges next;
+ //Jeśli lista krawędzi jest pusta zwraca błąd i przerywa działanie
+ if(*ptr==NULL)
+ {
+  printf("Nie można usunać nieistniejącej krawędzi!\n");
+  return;
+ }
+ prev=NULL;
+ temp=*ptr;
+ //przegląda w poszukiwaniu krawędzi
+ while((temp->next != NULL)&&(!compare(temp->id,i,0,0)))
+ {
+  prev=temp;
+  temp=temp->next;
+ }
+ //jeśli nie istnieje zwraca błąd
+ if((temp->next == NULL)&&(!compare(temp->id,i,0,0)))
+ {
+  printf("Nie można usunać nieistniejącej krawędzi!\n");
+  return;
+ }
+ //usuwa elementy list węzłów, które dotyczą danej krawędzi
+ delete_list(&(temp->inNode->outEdges), temp->id);
+ delete_list(&(temp->outNode->inEdges), temp->id);
+ //w końcu usuwa samą krawędź (tak jak w funkcji do usuwania list)
+ char tempstr[50];
+ strcpy(tempstr,i);
+ if(temp != NULL)
+ {
+  next=temp->next;
+  if(prev==NULL)
+  {
+   free(temp);
+   *ptr=next;
+  }
+  else
+  {
+   free(temp);
+   prev->next=next;
+  }
+ }
+ printf("Krawędź %s usunięta!\n", tempstr);
+}

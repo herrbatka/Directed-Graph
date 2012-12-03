@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "moja.h"
+
+//funkcja dodajaca krawędzie
+void insert_edge(nodes ptr, edges *ptr2, char i[],char a[],char b[])
+{
+ edges nowy;
+ //jeśli lista krawędzi nie jest pusta...
+ if(*ptr2!=NULL)
+ {
+  //sprawdza czy istnieje krawędzi o danym id i, jeśli tak, przerywa dodawanie
+  if(edge_by_id(*ptr2,i)!=NULL)
+  {
+   printf("Krawędź o podanym id już istnieje!\n");
+   return;
+  }
+ }
+ //jeśli któryś z węzłów, które ma łączyć krawędź nie istnieje, przerywa jej dodawanie
+ if((node_by_id(ptr,a)==NULL)||(node_by_id(ptr,b)==NULL))
+ {
+  printf("Podane węzły muszą istnieć!\n");
+  return;
+ }
+ //alokuje pamieć
+ if((nowy=(edges)malloc(sizeof(struct Edge)))==NULL)
+ {
+  printf("Brak wolnej pamięci\n");
+  return;
+ }
+ //ustala wartości dla nowej krawędzi i...
+ //nowy->id=i; //????
+ strcpy(nowy->id,i);
+ nowy->inNode=node_by_id(ptr,a);
+ nowy->outNode=node_by_id(ptr,b);
+ nowy->next=*ptr2;
+ ///..ustawia ją na poczatek listy krawędzi, a potem...
+ *ptr2=nowy;
+ //...dodaje wpisy o niej do wierzcholków, które ma łączyć
+ (*ptr2)->inNode->outEdges = insertlist(nowy->inNode->outEdges,*ptr2,i);
+ (*ptr2)->outNode->inEdges = insertlist(nowy->outNode->inEdges,*ptr2,i);
+ printf("Krawędź %s(%s->%s) dodana!\n", i, a, b);
+}

@@ -1,0 +1,7 @@
+//delete_edge.h
+#ifndef DELETE_EDGE_H
+#define DELETE_EDGE_H
+
+void delete_edge(edges *ptr, char i[]);
+
+#endif

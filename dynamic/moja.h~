@@ -1,0 +1,76 @@
+#ifndef MOJA_H
+#define MOJA_H
+//Struktura przechowująca listę krawędzi (dla struktury węzłów)
+struct List
+{
+ //Wskaźnik na krawędź
+ struct Edge *edg;
+ //Wskaźnik na następny element listy
+ struct List *next;
+};
+//"Alias" pozwalający używać "lists" zamiast konstrukcji "struct List *"
+typedef struct List *lists;
+
+//Struktura przechowująca poszczególne węzły
+struct Node
+{
+ //Id węzła
+ char id[50];
+ //Lista (vide wskaźnik na strukturę List zadeklarowana wcześniej) krawędzi wchodzących do węzła
+ struct List *inEdges;
+ //Lista (vide wskaźnik na strukturę List zadeklarowana wcześniej) krawędzi wychodzących z węzła
+ struct List *outEdges;
+ //Wskaźnik na kolejny element listy (kolejny węzeł)
+ struct Node *next;
+};
+//"Alias" pozwalający używać "nodes" zamiast konstrukcji "struct Node *"
+typedef struct Node *nodes;
+
+//Struktura przechowująca poszczególne krawędzi
+struct Edge
+{
+ //Id krawędzi
+ char id[50];
+ //Wskaźnik na węzeł, z którego krawędź wychodzi
+ struct Node *inNode;
+ //Wskaźnik na węzeł, do którego krawędź wchodzi
+ struct Node *outNode;
+ //Wskaźnik na kolejny element listy (kolejną krawędź)
+ struct Edge *next;
+};
+//"Alias" pozwalający używać "edges" zamiast konstrukcji "struct Edge *"
+typedef struct Edge *edges;
+
+struct Path
+{
+ //Wskaźnik na krawędź
+ char id[50];
+ //Wskaźnik na następny element listy
+ struct Path *next;
+};
+//"Alias" pozwalający używać "lists" zamiast konstrukcji "struct List *"
+typedef struct Path *steps;
+
+edges arc_between(nodes ptr,char i[], char j[]);
+bool compare(char a[], char b[], int i, int j);
+bool confirmexit();
+bool contain(steps lista, char b[]);
+void delete_edge(edges *ptr, char i[]);
+void delete_list(lists *ptr, char i[]);
+void delete_node(nodes *ptr, edges *ptr2, char i[]);
+void duzelitery(char a[]);
+edges edge_by_id(edges ptr, char i[]);
+void help();
+void insert_edge(nodes ptr, edges *ptr2, char i[],char a[],char b[]);
+lists insertlist(lists ptr2, edges ptr, char i[]);
+void insert_node(nodes *ptr, char i[]);
+void neighbours(nodes ptr,char i[]);
+nodes node_by_id(nodes ptr, char i[]);
+bool pathfinding(char i[], char j[], steps *tabl, steps *final, nodes ptr);
+void pre_pathfinding(char i[], char j[], nodes ptr);
+void print_edges(edges ptr);
+void print_list(lists ptr);
+void readfromstring(char a[], int *i, char* id);
+void print_nodes(nodes ptr);
+void superfree(nodes *ptr, edges *ptr2);
+#endif

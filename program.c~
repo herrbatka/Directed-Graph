@@ -1,0 +1,757 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+//Struktura przechowująca listę krawędzi (używana potem w strukturze węzłów)
+//Lista przechowuje informacje o tym, jakie krawędzie wchodzą/wychodzą z węzła
+struct List
+{
+ //Wskaźnik na krawędź
+ struct Edge *edg;
+ //Wskaźnik na następny element listy
+ struct List *next;
+};
+//"Alias" pozwalający używać "lists" zamiast konstrukcji "struct List *"
+typedef struct List *lists;
+
+//Struktura przechowująca poszczególne węzły
+struct Node
+{
+ //Id węzła
+ int id;
+ //Lista (vide wskaźnik na strukturę List zadeklarowaną wcześniej) krawędzi wchodzących do węzła
+ struct List *outEdges;
+ //Lista (vide wskaźnik na strukturę List zadeklarowana wcześniej) krawędzi wychodzących z węzła
+ struct List *inEdges;
+ //Wskaźnik na kolejny element listy (kolejny węzeł)
+ struct Node *next;
+};
+//"Alias" pozwalający używać "nodes" zamiast konstrukcji "struct Node *"
+typedef struct Node *nodes;
+
+//Struktura przechowująca poszczególne krawędzi
+struct Edge
+{
+ //Id krawędzi
+ int id;
+ //Wskaźnik na węzeł, z którego krawędź wychodzi
+ struct Node *inNode;
+ //Wskaźnik na węzeł, do którego krawędź wchodzi
+ struct Node *outNode;
+ //Wskaźnik na kolejny element listy (kolejną krawędź)
+ struct Edge *next;
+};
+//"Alias" pozwalający używać "edges" zamiast konstrukcji "struct Edge *"
+typedef struct Edge *edges;
+
+//funkcja zwracająca węzeł po podanym id
+nodes node_by_id(nodes ptr, int i)
+{
+ //deklaracja wskaźnika na węzeł
+ nodes biezacy;
+ //wskaźnik biezacy wskazuje teraz na to samo co ptr (czyli na pierwszy węzeł na liście)
+ biezacy=ptr;
+ //jeżeli lista węzłów jest pusta zwraca NULL
+ if(ptr==NULL) {return NULL;}
+ //przegląda wszystkie węzły, aż napotka ten o właściwym id (podanym przy wywołaniu funkcji)
+ while((biezacy->next != NULL)&&(biezacy->id != i))
+ {
+  //wybiera następny węzeł (ten, na który wskazuje pole next w strukturze węzła, na który wskazuje aktualnie wskaźnik biezacy)
+  biezacy=biezacy->next;
+ }
+ //jeżeli zakończy przeglądanie listy węzłów i ostatni wybrany nie ma odpowiedniego id zwraca NULL
+ if((biezacy->next == NULL)&&(biezacy->id != i)) {return NULL;}
+ //zwraca znaleziony węzeł (o ile oczywiście dotrze do tego momentu)
+ return biezacy;
+}
+
+//funkcja dodająca węzły
+void insert_node(nodes *ptr, int i)
+{
+ //deklaracja wskaźnika na węzeł
+ nodes nowy;
+ //jeśli lista węzłów nie jest pusta sprawdza po id i...
+ if(*ptr != NULL)
+ {
+  //...jeśli węzeł o takim id już istnieje kończy funkcje
+  if(node_by_id(*ptr,i)!=NULL)
+  {
+   //komunikat
+   printf("Węzeł o podanym id już istnieje!\n");
+   //przerwanie funkcji
+   return;
+  }
+ }
+ //Alokuje pamięć dla nowego węzła, o ile jest to możliwe, w przeciwnym wyapdku wyświetla komunikat
+ if((nowy=(nodes)malloc(sizeof(struct Node)))==NULL)
+ {
+  //komunikat
+  printf("Brak wolnej pamięci\n");
+  //przerwanie funkcji
+  return;
+ }
+ //Ustawienia dla nowego węzła:
+ //id
+ nowy->id=i;
+ //wskaźnik na aktualnie pierwszy element listy węzłów (aby podstawić nowy węzeł na początek tej listy)
+ nowy->next=*ptr;
+ //listy krawędzi wchodzących i wychodzących, na razie puste
+ nowy->outEdges=NULL;
+ nowy->inEdges=NULL;
+ //wstawienie nowego węzła na początek listy węzłów
+ *ptr= nowy;
+ //komunikat
+ printf("Węzeł %d dodany!\n", i);
+}
+
+//funkcja drukująca listę krawędzi dla wierzchołków
+void print_list(lists ptr)
+{
+ //jeśli nie ma krawędzi dla danego węzła...
+ if(ptr==NULL)
+ {
+  //...wyświetla 'brak'
+  printf(" brak");
+ }
+ //W innym przypadku iteruje po wszystkich elementach listy krawędzi i wyprowadza na ekran stosowne informacje
+ while(ptr != NULL)
+ {
+  //drukuje id krawędzi, na którą wskazuje aktualny element listy krawędzi
+  printf(" %d", ptr->edg->id);
+  //przechodzi do następnego elementu listy krawędzi
+  ptr=ptr->next;
+ }
+}
+
+//funkcja drukująca węzły
+void print_nodes(nodes ptr)
+{
+ printf("Zadeklarowane węzły: ");
+ //jeśli nie ma węzłów wyświetla 'brak'
+ if(ptr==NULL)
+ {
+  printf(" brak\n");
+  return;
+ }
+ //iteruje po wszystkich węzłach i wyprowadza na ekran infromacje
+ while(ptr != NULL)
+ {
+  printf("%d(out:", ptr->id);
+  //drukuje listy wychodzących i wchodzących wierzchołków, zdaje się, ze na odwrót zadeklarowałem i outEdges to tak naprawdę lista wychodzących krawędzi a nie jakby wskazywała nazwa wychodzących, ale nie chce mi się zmieniać.
+  print_list(ptr->outEdges);
+  printf("; in:");
+  print_list(ptr->inEdges);
+  printf(") ");
+  //przejście do następnego węzła
+  ptr=ptr->next;
+ }
+ printf("\n");
+}
+
+//funkcja zwracająca krawędź po podanym id (jak w analogicznej dla węzłów)
+edges edge_by_id(edges ptr, int i)
+{
+ //wskaźnik na krawędź
+ edges biezacy;
+ //jeśli nie ma krawędzi wyświetla 'brak'
+ if(ptr==NULL)
+ {
+  return NULL;
+ }
+ //ustala wskaźnik na pierwszą krawędź
+ biezacy=ptr;
+ //iteruje po wszystkich krawędziach, aż napotka koniec listy, albo znajdzie odpowiednią krawędź
+ while((biezacy->next != NULL)&&(biezacy->id != i))
+ {
+  //przejście do następnej krawędzi
+  biezacy=biezacy->next;
+ }
+ //jeśli poprzednia pętla doszła do końca listy, a i tak ostatni element nie ma szukanego id, to zwraca NULL, bo takiego węzła nie ma
+ if((biezacy->next == NULL)&&(biezacy->id != i))
+ {
+  return NULL;
+ }
+ //zwraca znaleziony węzeł
+ return biezacy;
+}
+
+//funkcja dodająca element listy (de facto wiążąca węzeł z krawędzią)
+lists insertlist(lists ptr2, edges ptr, int i)
+{
+ //wskaźnik na listę (element listy)
+ lists nowy;
+ //alokacja pamieci dla nowego elementu
+ nowy=(lists)malloc(sizeof(struct List));
+ //Ustawienie w liście wskaźnika na krawędź o id i (krawędź wybiera wcześniej zadeklarowana funkcja)
+ nowy->edg=edge_by_id(ptr,i);
+ //Wstawienie wskaźnika na pierwszy element listy krawędzi wchodzących/wychodzących z węzła
+ nowy->next=ptr2;
+ //zwrócenie utworzonego elementu listy (potem, już na zewnątrz, zostanie on wstawiony na początek listy krawędzi wchodz/wychodz
+ return nowy;
+}
+
+//funkcja dodajaca krawędzie
+void insert_edge(nodes ptr, edges *ptr2, int i,int a,int b)
+{
+ edges nowy;
+ //jeśli lista krawędzi nie jest pusta...
+ if(*ptr2!=NULL)
+ {
+  //sprawdza czy istnieje krawędzi o danym id i, jeśli tak, przerywa dodawanie
+  if(edge_by_id(*ptr2,i)!=NULL)
+  {
+   printf("Krawędź o podanym id już istnieje!\n");
+   return;
+  }
+ }
+ //jeśli któryś z węzłów, które ma łączyć krawędź nie istnieje, przerywa jej dodawanie
+ if((node_by_id(ptr,a)==NULL)||(node_by_id(ptr,b)==NULL))
+ {
+  printf("Podane węzły muszą istnieć!\n");
+  return;
+ }
+ //alokuje pamieć
+ if((nowy=(edges)malloc(sizeof(struct Edge)))==NULL)
+ {
+  printf("Brak wolnej pamięci\n");
+  return;
+ }
+ //ustala wartości dla nowej krawędzi i...
+ nowy->id=i;
+ nowy->inNode=node_by_id(ptr,a);
+ nowy->outNode=node_by_id(ptr,b);
+ nowy->next=*ptr2;
+ ///..ustawia ją na poczatek listy krawędzi, a potem...
+ *ptr2=nowy;
+ //...dodaje wpisy o niej do wierzcholków, które ma łączyć
+ (*ptr2)->inNode->outEdges = insertlist(nowy->inNode->outEdges,*ptr2,i);
+ (*ptr2)->outNode->inEdges = insertlist(nowy->outNode->inEdges,*ptr2,i);
+ printf("Krawędź %d(%d->%d) dodana!\n", i, a, b);
+}
+
+//funkcja drukujaca krawędzie
+void print_edges(edges ptr)
+{
+ printf("Zadeklarowane krawędzie: ");
+ //jeśli nie ma krawędzi, informuje o tym i przerywa funkcję
+ if(ptr==NULL)
+ {
+  printf(" brak\n");
+  return;
+ }
+ //dla każdej krawędzi, aż dojdzie do końca...
+ while(ptr != NULL)
+ {
+ //...drukuje informacje postaci 'ID krawędzi(ID węzła początkowego -> Id węzła końcowego)'
+ printf("%d(%d->%d) ", ptr->id, ptr->inNode->id, ptr->outNode->id);
+ //i przechodzi do kolejnej krawędzi z listy
+ ptr=ptr->next;
+ }
+ printf("\n");
+}
+
+//funkcja usuwająca element listy o zadanym id
+void delete_list(lists *ptr, int i)
+{
+ //deklaracja wskaźników na listy
+ lists prev;
+ lists temp;
+ lists next;
+ //poprzedni element nie wskazuje na nic (bo zaczynamy dopiero przeglądać listę i nie ma nic wcześniej)
+ prev=NULL;
+ //ustawienie wskaźnika na początek listy
+ temp=*ptr;
+ //przeszukuje listę, aż dojdzie do końca listy/znajdzie element o szukanym id
+ while((temp != NULL)&&(temp->edg->id != i))
+ {
+  prev=temp;
+  temp=temp->next;
+ }
+ //jeśli znajduje odpowiedni element to go zwalnia, inaczej konczy pracę
+ if(temp != NULL)
+ {
+  //zostaje wybrany następny element po znalezionym (może być pusty)
+  next=temp->next;
+  //jeśli poprzedni element nie istnieje (szukany jest na początku), przesuwa następny na poczatek
+  if(prev==NULL)
+  {
+   //zwalnia znaleziony element
+   free(temp);
+   //nastepny element po znalezionym zostaje elementem pierwszym
+   *ptr=next;
+  }
+  //w innym wypadku łączy poprzedni z nastepnym
+  else
+  {
+   //zwalnia znaleziony element
+   free(temp);
+   //ustawia jako kolejny element po poprzedzającym znaleziony następny po nim (wskazuje on teraz na ten nastepny)
+   prev->next=next;
+  }
+ }
+}
+
+//funkcja usuwajaca krawędzie
+void delete_edge(edges *ptr, int i)
+{
+ //wskaźniki na krawędzie
+ edges prev;
+ edges temp;
+ edges next;
+ //Jeśli lista krawędzi jest pusta zwraca błąd i przerywa działanie
+ if(*ptr==NULL)
+ {
+  printf("Nie można usunać nieistniejącej krawędzi!\n");
+  return;
+ }
+ //poprzedni element nie wskazuje na nic (bo zaczynamy dopiero przeglądać listę i nie ma nic wcześniej)
+ prev=NULL;
+ //ustawienie wskaźnika na początek listy (jak w poprzedniej funkcji)
+ temp=*ptr;
+ //przegląda w poszukiwaniu krawędzi
+ while((temp->next != NULL)&&(temp->id != i))
+ {
+  prev=temp;
+  temp=temp->next;
+ }
+ //jeśli nie istnieje zwraca błąd
+ if((temp->next == NULL)&&(temp->id != i))
+ {
+  printf("Nie można usunać nieistniejącej krawędzi!\n");
+  return;
+ }
+ //usuwa elementy list węzłów, które dotyczą danej krawędzi
+ //usuwa listę krawędzi wychodzących w węźle, z którego wychodzi
+ delete_list(&(temp->inNode->outEdges), temp->id);
+ //i analogicznie dla wchodzących
+ delete_list(&(temp->outNode->inEdges), temp->id);
+ //w końcu usuwa samą krawędź (wszystko poniżej się dzieje tak jak w funkcji do usuwania list)
+ if(temp != NULL)
+ {
+  next=temp->next;
+  if(prev==NULL)
+  {
+   free(temp);
+   *ptr=next;
+  }
+  else
+  {
+   free(temp);
+   prev->next=next;
+  }
+ }
+ printf("Krawędź %d usunięta!\n", i);
+}
+
+//funkcja usuwajaca węzły
+void delete_node(nodes *ptr, edges *ptr2, int i)
+{
+ nodes prev;
+ nodes temp;
+ nodes next;
+ prev=NULL;
+ //dla pustej listy węzłów przerywa
+ if(*ptr==NULL)
+ {
+  printf("Nie można usunać nieistniejącego wierzchołka!\n");
+  return;
+ }
+ temp=*ptr;
+ //przeszukuje listę węzłów do znalezienia szukanego
+ while((temp->next != NULL)&&(temp->id != i))
+ {
+  prev=temp;
+  temp=temp->next;
+ }
+ //jeśli nie ma takiego węzła przerywa
+ if((temp->next == NULL)&&(temp->id != i))
+ {
+  printf("Nie można usunać nieistniejącego wierzchołka!\n");
+  return;
+ }
+ //usuwa wszystkie krawędzie, które znajdują się na liście węzłów wchodz/wychodz
+ //pętla idzie, dopóki nie dojdzie do końca tej listy
+  while(temp->inEdges != NULL)
+  {
+   //zwalnia krawędź
+   delete_edge(ptr2, temp->inEdges->edg->id);
+  }
+  //j.w.
+  while(temp->outEdges != NULL)
+  {
+   delete_edge(ptr2, temp->outEdges->edg->id);
+  }
+ //usuwa same listy, które już nic nie zawierają
+ free((*ptr)->outEdges);
+ free((*ptr)->inEdges);
+ //usuwa sam węzeł (jak w funkcji do usuwania list)
+ if(temp != NULL)
+ {
+  next=temp->next;
+  if(prev==NULL)
+  {
+   free(temp);
+   *ptr=next;
+  }
+  else
+  {
+   free(temp);
+   prev->next=next;
+  }
+ }
+ printf("Węzeł %d usunięty!\n", i);
+}
+
+//funkcja monitująca o potwierdzenie wyjścia
+//tu wiadomo chyba wszystko
+bool confirmexit()
+{
+ char a;
+ printf("Na pewno wyjść? [t/n] ");
+ scanf("%c", &a);
+ if((a=='t')||(a=='T'))
+ {
+  return true;
+ }
+ return false;
+}
+
+//funkcja zwalniająca pamięć na zakończenie
+void superfree(nodes *ptr, edges *ptr2)
+{
+ //wywoływanie usuwania węzłów, aż wskaźnik węzłów nie będzie na nic wskazywał (cały czas wskazuje na pierwszy element, więc dopiero gdy lista będzie pusta warunek będzie spełniony)
+ while(*ptr != NULL)
+  {
+   delete_node(ptr, ptr2, (*ptr)->id);
+  }
+}
+
+//porównywanie łańcuchów znakowych; podobna do tej z zeszłego semestru z małymi zmianami
+bool compare(char a[], char b[], int i, int j)
+{
+ bool wynik=true;
+ //jeśli skończył się łańcuch b, a a nie, wywala false
+ if((b[j]!='\0') && (a[i]=='\0'))
+ {
+  return false;
+ }
+ //jeśli skończył się a, a b nie i ostatni element nie był gwiazdką, to wywala false
+ if((b[j]=='\0') && (a[i]!='\0')&& (a[i]!='*'))
+ {
+  return false;
+ }
+ //jeśli żaden sie nie skończył to sprawdza dalej
+ if((b[j]!='\0') && (a[i]!='\0'))
+ {
+  if(a[i]=='*')
+  {
+   //uproszczenie polegajace na tym, ze gdy znajdzie w trakcie porównywania spację to "wychodzi" z gwiazdki, czyli to co jest pod * musi sie mieścić pomiedzy spacjami
+   if(b[j]==' ')
+   {
+    wynik=compare(a,b,i+1,j);
+   }
+   //identyfikator musi być liczbą, więc sprawdzam, czy pod gwiazdką są tylko cyferki
+   else if(b[j]!='0'&&b[j]!='1'&&b[j]!='2'&&b[j]!='3'&&b[j]!='4'&&b[j]!='5'&&b[j]!='6'&&b[j]!='7'&&b[j]!='8'&&b[j]!='9')
+   {
+    wynik=false;
+   }
+   else
+   {
+    wynik=compare(a,b,i,j+1);
+   }
+  }
+  else if(a[i]!=b[j])
+  {
+   return false;
+  }
+  else
+  {
+   wynik= compare(a,b,i+1,j+1);
+  }
+ }
+ return wynik;
+}
+
+//"wyciąganie" id węzłów i krawędzi z poleceń
+//jest *i, bo musi zmieniać wartość i, które jest poza funkcją, żeby można było kilka rzeczy z tego samego łańcucha wyczytać (np. z insert arc * from * to *)
+int readfromstring(char a[], int *i)
+{
+ int j;
+ char slowo[50];
+ //czyści tymczasowe "slowo"
+ for( j=0; j < 50; j++ )
+ {
+  slowo[j] = '\0';
+ }
+ j=0;
+ //leci po przekazanej instrukcji od elementu i-tego, aż napotka na koniec łańcucha...
+ while((a[j+*i]!='\0'))
+ {
+  //..lub spację
+  if(a[j+*i]==' ') {break;}
+  //przypisuje j+i-ty element istrukcji do j-tego elementu słowa
+  slowo[j]=a[j+*i];
+  //zwiększa j
+  j++;
+ }
+ //zmienia wartość i (na zewnatrz funkcji)
+ *i=*i+j;
+ //zamienia łańcuch znakowy na liczbę typu integer...
+ int wynik = atoi(slowo);
+ //...i ją zwraca
+ return wynik;
+}
+
+//funkcja drukująca sąsiedztwo węzła
+void neighbours(nodes ptr,int i)
+{
+ printf("Sąsiedztwo węzła %d: ", i);
+ //jeśli nie ma węzłów wyświetla 'brak'
+ if(ptr==NULL)
+ {
+  printf(" brak, węzeł nie istnieje\n");
+  return;
+ }
+ if(node_by_id(ptr,i)!=NULL)
+ {
+  nodes temp=node_by_id(ptr,i);
+  if(temp->outEdges==NULL&&temp->inEdges==NULL)
+  {
+   printf(" brak");
+  }
+  lists lst=temp->outEdges;
+  while(lst!=NULL)
+  {
+   printf("%d ", lst->edg->outNode->id);
+   lst=lst->next;
+  }
+  lst=temp->inEdges;
+  while(lst!=NULL)
+  {
+   printf("%d ", lst->edg->inNode->id);
+   lst=lst->next;
+  }
+  printf("\n");
+  return;
+ }
+ printf(" brak, węzeł nie istnieje\n");
+}
+
+//funkcja drukująca sąsiedztwo węzła
+edges arc_between(nodes ptr,int i, int j)
+{
+ if(ptr==NULL)
+ {
+  return NULL;
+ }
+ if(node_by_id(ptr, i)==NULL||node_by_id(ptr, j)==NULL)
+ {
+  return NULL;
+ }
+ lists temp=(node_by_id(ptr, i))->outEdges;
+ if(temp==NULL)
+ {
+  return NULL;
+ }
+ while((temp->next != NULL)&& (temp->edg->outNode->id != j))
+ {
+  //wybiera następny węzeł (poprzez wskaźnik)
+  temp=temp->next;
+ }
+ if(temp->edg->outNode->id == j)
+ {
+  return temp->edg;
+ }
+ return NULL;
+}
+
+struct Path
+{
+ //Wskaźnik na krawędź
+ int id;
+ //Wskaźnik na następny element listy
+ struct Path *next;
+};
+//"Alias" pozwalający używać "lists" zamiast konstrukcji "struct List *"
+typedef struct Path *steps;
+
+bool contain(steps lista, int b)
+{
+ steps temp=lista;
+ while(temp!=NULL)
+ {
+  if(temp->id==b)
+  {
+   return true;
+  }
+  temp=temp->next;
+ }
+ return false;
+}
+
+bool pathfinding(int i, int j, steps *tabl, steps *final, nodes ptr)
+{
+ steps nowy;
+ if(i==j)
+ {
+  nowy=(steps)malloc(sizeof(struct Path));
+  nowy->next=*final;
+  nowy->id=i;
+  *final=nowy;
+  return true;
+ }
+ lists temp=node_by_id(ptr,i)->outEdges;
+ //printf("%s",temp->edg->outNode->id);
+ while(temp!=NULL)
+ {
+  if(!contain(*tabl,temp->edg->outNode->id))
+  {
+   if(pathfinding(temp->edg->outNode->id,j,tabl,final,ptr)==true)
+   {
+    nowy=(steps)malloc(sizeof(struct Path));
+    nowy->next=*final;
+    nowy->id=i;
+    *final=nowy;
+    return true;
+   }
+  }
+  temp=temp->next;
+ }
+ nowy=(steps)malloc(sizeof(struct Path));
+ nowy->next=*tabl;
+   nowy->id=i;
+ *tabl=nowy;
+ return false;
+}
+
+void pre_pathfinding(int i, int j, nodes ptr)
+{
+ if(ptr==NULL)
+ {
+  printf("Podane węzły muszą istnieć!");
+  return;
+ }
+ if(node_by_id(ptr,i)==NULL||node_by_id(ptr,j)==NULL)
+ {
+  printf("Podane węzły muszą istnieć!");
+  return;
+ }
+ steps tabl=NULL;
+ steps final=NULL;
+ pathfinding(i,j,&tabl,&final,ptr);
+ steps temp=final;
+ if(temp==NULL)
+ {
+  printf("Brak połączenia!");
+  return;
+ }
+printf("%d", temp->id);
+temp=temp->next;
+while(temp != NULL)
+ {
+  printf("->%d", temp->id);
+  temp=temp->next;
+ }
+printf("\n");
+}
+
+
+//właściwa część programu
+int main()
+{
+ //tworzy puste na razie wskaźniki na wężły i krawędzie
+ nodes ptr=NULL;
+ edges ptr2=NULL;
+ char instrukcja[50];
+ int i;
+ int a,b,c;
+ //nieskończona pętla, w której wykonuje sie program
+ while(true)
+ {
+  //używam gets, bo w przeciwieństwie do scanf nie zjada spacji
+  gets(instrukcja);
+  //porównuje instrukcję z kolejnymi możliwymi funkcjami
+  if(compare("insert node *", instrukcja, 0,0))
+  {
+   //ustala i na 12 (bo na 12 zaczyna się to, co kryje sie pod gwiazdką
+   i=12;
+   //wczytuje wartość od 12 elementu do spacji i zamienia na int
+   a = readfromstring(instrukcja, &i);
+   //wstawia węzeł
+   insert_node(&ptr,a);
+  }
+  else if(compare("insert arc * from * to *", instrukcja, 0,0))
+  {
+   //analogicznie, ale wykonuje kilka wczytań
+   i=11;
+   a=readfromstring(instrukcja, &i);
+   i+=6;
+   b=readfromstring(instrukcja, &i);
+   i+=4;
+   c=readfromstring(instrukcja, &i);
+   insert_edge(ptr,&ptr2,a,b,c);
+  }
+  else if(compare("delete node *", instrukcja, 0,0))
+  {
+   i=12;
+   a=readfromstring(instrukcja, &i);
+   delete_node(&ptr,&ptr2,a);
+  }
+  else if(compare("delete arc *", instrukcja, 0,0))
+  {
+   i=11;
+   a=readfromstring(instrukcja, &i);
+   delete_edge(&ptr2,a);
+  }
+  else if(compare("nodes", instrukcja, 0,0))
+  {
+   print_nodes(ptr);
+  }
+  else if(compare("arcs", instrukcja, 0,0))
+  {
+   print_edges(ptr2);
+  }
+else if(compare("path from * to *", instrukcja, 0,0))
+  {
+   i=10;
+   a=readfromstring(instrukcja, &i);
+   i+=4;
+   b=readfromstring(instrukcja, &i);
+   pre_pathfinding(a,b,ptr);
+  }
+ else if(compare("neighbor of *", instrukcja, 0,0))
+  {
+   i=12;
+   a=readfromstring(instrukcja, &i);
+   neighbours(ptr,a);
+  }
+else if(compare("arc from * to *", instrukcja, 0,0))
+  {
+   i=9;
+   a=readfromstring(instrukcja, &i);
+   i+=4;
+   b=readfromstring(instrukcja, &i);
+   if(arc_between(ptr,a,b)!=NULL)
+   {
+    printf("Węzły łączy krawędź %d\n", arc_between(ptr,a,b)->id);
+   }
+   else
+   {
+    printf("Brak połączenia\n");
+   }
+  }
+  else if(compare("exit", instrukcja, 0,0))
+  {
+   //prosi o potwierdzenie wyjścia
+   if(confirmexit())
+   {
+    //zwalnia wszystkie struktury
+    superfree(&ptr,&ptr2);
+    //konczy program
+    return 0;
+   }
+  }
+  printf("\n");
+ }
+ return 0;
+}

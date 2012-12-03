@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "structures.h"
+#include "delete_list.h"
+#include "compare.h"
+
+//funkcja usuwająca elemnent listy o zadanym id
+void delete_list(lists *ptr, char i[])
+{
+ lists prev;
+ lists temp;
+ lists next;
+ prev=NULL;
+ temp=*ptr;
+ //przeszukuje listę
+ while((temp != NULL)&&(!compare(temp->edg->id,i,0,0)))
+ {
+  prev=temp;
+  temp=temp->next;
+ }
+ //jeśli znajduje odpowiedni element to go zwalnia, inaczej konczy pracę
+ if(temp != NULL)
+ {
+  next=temp->next;
+  //jeśli poprzedni element nie istnieje, przesuwa następny na poczatek
+  if(prev==NULL)
+  {
+   free(temp);
+   *ptr=next;
+  }
+  //w innym wypadku łączy poprzedni z nastepnym
+  else
+  {
+   free(temp);
+   prev->next=next;
+  }
+ }
+}

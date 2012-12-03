@@ -1,0 +1,7 @@
+//confirmexit.h
+#ifndef CONFIRMEXIT_H
+#define CONFIRMEXIT_H
+
+bool confirmexit();
+
+#endif

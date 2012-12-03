@@ -1,0 +1,8 @@
+mkdir ../include
+mkdir ../include
+cp ../moja.h ../include
+mkdir ../lib
+cp ../libmoja.so ../lib
+mkdir ../bin
+make
+export LD_LIBRARY_PATH=../lib
